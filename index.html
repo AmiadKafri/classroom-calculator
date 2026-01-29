@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>מחשבון כיתות אופטימלי</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+        }
+        
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            padding: 30px;
+            max-width: 600px;
+            width: 100%;
+            margin-top: 20px;
+        }
+        
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 10px;
+            font-size: 1.8em;
+        }
+        
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 0.95em;
+        }
+        
+        .input-section {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .input-group {
+            margin-bottom: 15px;
+        }
+        
+        .input-group:last-child {
+            margin-bottom: 0;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #444;
+        }
+        
+        .label-hint {
+            font-weight: normal;
+            color: #888;
+            font-size: 0.85em;
+        }
+        
+        input[type="number"] {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 1.1em;
+            transition: border-color 0.3s;
+        }
+        
+        input[type="number"]:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        button {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.2em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+        }
+        
+        button:active {
+            transform: translateY(0);
+        }
+        
+        .results {
+            display: none;
+            margin-top: 25px;
+        }
+        
+        .results.show {
+            display: block;
+        }
+        
+        .result-card {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 15px;
+            border-right: 4px solid #667eea;
+        }
+        
+        .result-card.warning {
+            border-right-color: #f39c12;
+            background: #fff9e6;
+        }
+        
+        .result-card.success {
+            border-right-color: #27ae60;
+            background: #e8f8ef;
+        }
+        
+        .result-card.info {
+            border-right-color: #3498db;
+            background: #e8f4fc;
+        }
+        
+        .result-title {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 1.1em;
+        }
+        
+        .result-value {
+            font-size: 2em;
+            font-weight: 700;
+            color: #667eea;
+        }
+        
+        .result-detail {
+            color: #666;
+            margin-top: 8px;
+            line-height: 1.6;
+        }
+        
+        .highlight {
+            background: #667eea;
+            color: white;
+            padding: 2px 8px;
+            border-radius: 5px;
+            font-weight: 600;
+        }
+        
+        .range-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+        
+        .range-table th, .range-table td {
+            padding: 10px;
+            text-align: center;
+            border: 1px solid #ddd;
+        }
+        
+        .range-table th {
+            background: #667eea;
+            color: white;
+        }
+        
+        .range-table tr:nth-child(even) {
+            background: #f2f2f2;
+        }
+        
+        .range-table .optimal {
+            background: #d4edda;
+            font-weight: bold;
+        }
+        
+        .divider {
+            height: 1px;
+            background: #e0e0e0;
+            margin: 20px 0;
+        }
+        
+        .emoji {
+            font-size: 1.3em;
+            margin-left: 5px;
+        }
+
+        .rule-box {
+            background: #fff3cd;
+            border: 1px solid #ffc107;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 20px;
+            font-size: 0.9em;
+        }
+
+        .rule-box strong {
+            color: #856404;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎒 מחשבון כיתות אופטימלי</h1>
+        <p class="subtitle">חישוב כמות ילדים אופטימלית לרישום לכיתה א'</p>
+        
+        <div class="rule-box">
+            <strong>📋 כללי המערכת:</strong><br>
+            • סף פתיחת כיתה נוספת: <strong>41 ילדים ומעלה</strong> בכיתה (עד 40 - לא נפתחת)<br>
+            • הפיזור בין כיתות מאוזן (הפרש מקסימלי: ילד אחד)
+        </div>
+        
+        <div class="input-section">
+            <div class="input-group">
+                <label>
+                    מספר כיתות קיים (K)
+                    <span class="label-hint">— כמה כיתות מתוכננות כרגע?</span>
+                </label>
+                <input type="number" id="numClasses" min="1" value="3" placeholder="לדוגמה: 3">
+            </div>
+            
+            <div class="input-group">
+                <label>
+                    מספר ילדים רשומים כרגע (N)
+                    <span class="label-hint">— כמה ילדים כבר נרשמו?</span>
+                </label>
+                <input type="number" id="numStudents" min="0" value="85" placeholder="לדוגמה: 85">
+            </div>
+            
+            <div class="input-group">
+                <label>
+                    יעד מקסימלי לכיתה (אופציונלי)
+                    <span class="label-hint">— מה הגודל המקסימלי הרצוי לכיתה?</span>
+                </label>
+                <input type="number" id="targetSize" min="1" max="39" placeholder="לדוגמה: 25">
+            </div>
+        </div>
+        
+        <button onclick="calculate()">חשב! 🧮</button>
+        
+        <div class="results" id="results">
+            <!-- Results will be inserted here -->
+        </div>
+    </div>
+
+    <script>
+        function calculate() {
+            const K = parseInt(document.getElementById('numClasses').value);
+            const N = parseInt(document.getElementById('numStudents').value);
+            const targetInput = document.getElementById('targetSize').value;
+            const target = targetInput ? parseInt(targetInput) : null;
+            
+            if (!K || K < 1) {
+                alert('נא להזין מספר כיתות תקין (1 ומעלה)');
+                return;
+            }
+            
+            if (N === undefined || N < 0 || isNaN(N)) {
+                alert('נא להזין מספר ילדים תקין');
+                return;
+            }
+            
+            // Calculate current distribution
+            const largeClass = Math.ceil(N / K);
+            const smallClass = Math.floor(N / K);
+            const numLargeClasses = N % K;
+            const numSmallClasses = K - numLargeClasses;
+            
+            // Check if new class opens (41+ opens new class, up to 40 stays)
+            const opensNewClass = largeClass > 40;
+            
+            // Calculate with K+1 classes
+            const largeClassPlus1 = Math.ceil(N / (K + 1));
+            const smallClassPlus1 = Math.floor(N / (K + 1));
+            
+            // Find minimum N to open new class (ceiling(N/K) > 40, i.e. >= 41)
+            // ceiling(N/K) >= 41 means N >= 41*K - K + 1 = 40K + 1
+            const minNForNewClass = 40 * K + 1;
+            
+            // Find optimal N range for current K classes
+            // Best case: smallest possible large class
+            // For K classes, N from (K*(size-1)+1) to K*size gives large class = size
+            
+            let resultsHTML = '';
+            
+            // Current situation card
+            resultsHTML += `
+                <div class="result-card ${opensNewClass ? 'warning' : 'success'}">
+                    <div class="result-title">📊 מצב נוכחי (${N} ילדים ב-${K} כיתות)</div>
+                    <div class="result-detail">
+                        <strong>גודל כיתה גדולה:</strong> <span class="highlight">${largeClass}</span> ילדים
+                        ${numLargeClasses > 0 ? `(${numLargeClasses} כיתות)` : ''}<br>
+                        <strong>גודל כיתה קטנה:</strong> <span class="highlight">${smallClass}</span> ילדים
+                        ${numSmallClasses > 0 ? `(${numSmallClasses} כיתות)` : ''}<br><br>
+                        <strong>האם נפתחת כיתה נוספת?</strong> 
+                        ${opensNewClass ? 
+                            '<span class="emoji">⚠️</span> כן! הכיתה הגדולה > 40' : 
+                            '<span class="emoji">✅</span> לא, הכיתה הגדולה ≤ 40'}
+                    </div>
+                </div>
+            `;
+            
+            // If opens new class, show comparison
+            if (opensNewClass) {
+                const improvement = largeClass - largeClassPlus1;
+                resultsHTML += `
+                    <div class="result-card info">
+                        <div class="result-title">🔄 השוואה: ${K} כיתות מול ${K + 1} כיתות</div>
+                        <div class="result-detail">
+                            <strong>עם ${K} כיתות:</strong> כיתה גדולה = ${largeClass} ילדים<br>
+                            <strong>עם ${K + 1} כיתות:</strong> כיתה גדולה = ${largeClassPlus1} ילדים<br><br>
+                            <strong>שיפור:</strong> <span class="highlight">${improvement} ילדים פחות</span> בכיתה הגדולה!
+                        </div>
+                    </div>
+                `;
+            }
+            
+            // Threshold info
+            resultsHTML += `
+                <div class="result-card">
+                    <div class="result-title">📌 סף פתיחת כיתה נוספת</div>
+                    <div class="result-detail">
+                        <strong>מינימום ילדים לפתיחת כיתה ${K + 1}:</strong> <span class="highlight">${minNForNewClass}</span> ילדים<br>
+                        <span style="color: #888;">(כאשר הכיתה הגדולה מגיעה ל-41)</span>
+                    </div>
+                </div>
+            `;
+            
+            // If target is specified
+            if (target) {
+                // Find minimum N such that ceiling(N/(K+1)) <= target
+                // This means N/(K+1) <= target, so N <= target * (K+1)
+                // But we also need N >= minNForNewClass to open new class
+                const maxNForTarget = target * (K + 1);
+                
+                if (target > 40) {
+                    resultsHTML += `
+                        <div class="result-card warning">
+                            <div class="result-title">⚠️ יעד לא רלוונטי</div>
+                            <div class="result-detail">
+                                היעד ${target} גדול או שווה ל-40, מה שיגרום לפתיחת כיתה נוספת בכל מקרה.
+                            </div>
+                        </div>
+                    `;
+                } else if (maxNForTarget >= minNForNewClass) {
+                    resultsHTML += `
+                        <div class="result-card success">
+                            <div class="result-title">🎯 להגיע ליעד של ${target} ילדים בכיתה</div>
+                            <div class="result-detail">
+                                <strong>טווח ילדים אופטימלי:</strong> 
+                                <span class="highlight">${minNForNewClass} - ${maxNForTarget}</span> ילדים<br><br>
+                                בטווח זה יפתחו ${K + 1} כיתות, והכיתה הגדולה תהיה לכל היותר ${target} ילדים.
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    resultsHTML += `
+                        <div class="result-card warning">
+                            <div class="result-title">⚠️ יעד לא ניתן להשגה</div>
+                            <div class="result-detail">
+                                כדי להגיע לכיתה של ${target} ילדים עם ${K + 1} כיתות, 
+                                צריך מקסימום ${maxNForTarget} ילדים.<br>
+                                אבל כדי לפתוח כיתה נוספת צריך מינימום ${minNForNewClass} ילדים.<br><br>
+                                <strong>פתרון:</strong> צריך לפתוח ${K + 2} כיתות או יותר.
+                            </div>
+                        </div>
+                    `;
+                }
+            }
+            
+            // Recommended ranges table
+            resultsHTML += `
+                <div class="result-card">
+                    <div class="result-title">📋 טבלת טווחים מומלצים עבור ${K} כיתות</div>
+                    <div class="result-detail">
+                        <table class="range-table">
+                            <tr>
+                                <th>גודל כיתה גדולה</th>
+                                <th>טווח ילדים</th>
+                                <th>מומלץ?</th>
+                            </tr>
+            `;
+            
+            // Show ranges for different class sizes (20-39 for current K)
+            for (let size = 20; size <= 39; size += 5) {
+                const minN = (size - 1) * K + 1;
+                const maxN = size * K;
+                const isOptimal = size <= 30;
+                resultsHTML += `
+                    <tr ${isOptimal ? 'class="optimal"' : ''}>
+                        <td>${size}</td>
+                        <td>${minN} - ${maxN}</td>
+                        <td>${isOptimal ? '✅ מומלץ' : '⚠️'}</td>
+                    </tr>
+                `;
+            }
+            
+            resultsHTML += `
+                        </table>
+                    </div>
+                </div>
+            `;
+            
+            // Show results
+            const resultsDiv = document.getElementById('results');
+            resultsDiv.innerHTML = resultsHTML;
+            resultsDiv.classList.add('show');
+        }
+        
+        // Calculate on Enter key
+        document.querySelectorAll('input').forEach(input => {
+            input.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') calculate();
+            });
+        });
+        
+        // Initial calculation
+        calculate();
+    </script>
+</body>
+</html>
